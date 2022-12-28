@@ -36,7 +36,7 @@ const VersionList: VFC = () => {
 
   if (protonInstalls.isSuccess) {
     return (
-      <PanelSection title="Installed">
+      <PanelSection title="Installs">
         <PanelSectionRow>
           {protonInstalls.data.map((proton) => (
             <ButtonItem layout="below">{proton.name}</ButtonItem>

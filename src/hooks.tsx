@@ -1,15 +1,16 @@
 import { ReactNode, useContext } from "react";
 import { ServerContext } from "./context";
-import { useMutation, useQuery } from "react-query";
+import { useMutation, useQuery, useQueryClient } from "react-query";
 import { showContextMenu } from "decky-frontend-lib";
 import AppContext from "./context";
 import ReleaseList from "./ReleaseList";
 import InstallRelease from "./InstallRelease";
 
-const useServerCall = <T,>(method: string, args: any) => {
+const useServerCall = <T,>(method: string, args?: any) => {
   const server = useServer();
 
   return useQuery([method, args], async () => {
+    console.log(method, args);
     if (!server) {
       throw new Error("ServerAPI not found.");
     }
@@ -24,7 +25,7 @@ const useServerCall = <T,>(method: string, args: any) => {
   });
 };
 
-const useServerMutation = <T,>() => {
+const useServerMutation = <T,>(options?: Parameters<typeof useMutation>[2]) => {
   const server = useServer();
 
   return useMutation(
@@ -43,7 +44,8 @@ const useServerMutation = <T,>() => {
       } else {
         throw new Error(result.result);
       }
-    }
+    },
+    options
   );
 };
 
@@ -63,7 +65,7 @@ export const useProtonInstalls = () => {
     name: string;
   };
 
-  const response = useServerCall<ProtonVersion[]>("get_proton_installs", {});
+  const response = useServerCall<ProtonVersion[]>("get_proton_installs");
 
   return response;
 };
@@ -74,13 +76,16 @@ export const useProtonReleases = () => {
     tag_name: string;
   };
 
-  const releases = useServerCall<GithubRelease[]>("get_available_releases", {});
+  const releases = useServerCall<GithubRelease[]>("get_releases");
 
   return releases;
 };
 
 export const useInstallProtonRelease = () => {
-  const mutation = useServerMutation();
+  const queryClient = useQueryClient();
+  const mutation = useServerMutation({
+    onSuccess: () => queryClient.invalidateQueries("get_proton_installs"),
+  });
 
   return (id: string) =>
     mutation.mutate({
@@ -115,7 +120,6 @@ export const useShowReleaseList = () => {
 export const useShowInstallRelease = () => {
   const showMenu = useShowContextMenu();
   return (id: string) => {
-    console.log(id);
     return showMenu(<InstallRelease id={id} />);
   };
 };
