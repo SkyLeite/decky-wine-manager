@@ -52,8 +52,8 @@ class Plugin:
         split_version_string = version_string.split(" ")
 
         return {
-            "version": split_version_string[0],
-            "name": split_version_string[1],
+            "version": split_version_string[0].strip(),
+            "name": split_version_string[1].strip(),
             "status": status,
         }
 

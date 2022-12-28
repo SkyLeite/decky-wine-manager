@@ -60,12 +60,13 @@ export const useServer = () => {
 };
 
 export const useProtonInstalls = () => {
-  type ProtonVersion = {
+  type ProtonInstall = {
     version: string;
     name: string;
+    status: "installed" | "installing";
   };
 
-  const response = useServerCall<ProtonVersion[]>("get_proton_installs");
+  const response = useServerCall<ProtonInstall[]>("get_proton_installs");
 
   return response;
 };

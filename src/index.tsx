@@ -9,9 +9,12 @@ import {
   staticClasses,
 } from "decky-frontend-lib";
 import { VFC } from "react";
-import { FaShip } from "react-icons/fa";
+import { FaCheck, FaShip, FaSpinner } from "react-icons/fa";
 import AppContext from "./context";
 import { useProtonInstalls, useShowReleaseList } from "./hooks";
+import Spinner from "./Spinner";
+
+import styles from "../assets/styles.css";
 
 const Manage: VFC = () => {
   const showReleaseList = useShowReleaseList();
@@ -37,11 +40,25 @@ const VersionList: VFC = () => {
   if (protonInstalls.isSuccess) {
     return (
       <PanelSection title="Installs">
-        <PanelSectionRow>
-          {protonInstalls.data.map((proton) => (
-            <ButtonItem layout="below">{proton.name}</ButtonItem>
-          ))}
-        </PanelSectionRow>
+        {protonInstalls.data.map((proton) => (
+          <PanelSectionRow>
+            <ButtonItem layout="below">
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                }}
+              >
+                <span>{proton.name}</span>
+                {proton.status == "installed" && (
+                  <FaCheck style={{ display: "block" }} />
+                )}
+                {proton.status == "installing" && <Spinner />}
+              </div>
+            </ButtonItem>
+          </PanelSectionRow>
+        ))}
       </PanelSection>
     );
   }
@@ -70,6 +87,8 @@ const DeckyPluginRouterTest: VFC = () => {
 };
 
 export default definePlugin((serverApi: ServerAPI) => {
+  serverApi.injectCssIntoTab("QuickAccess_uid2", styles);
+
   serverApi.routerHook.addRoute("/decky-plugin-test", DeckyPluginRouterTest, {
     exact: true,
   });
