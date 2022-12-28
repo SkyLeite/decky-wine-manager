@@ -42,7 +42,9 @@
     "chrome-remote-interface": "^0.31.3",
     "decky-frontend-lib": "^3.6.1",
     "dotenv": "^16.0.3",
-    "react-icons": "^4.4.0"
+    "react-async-hook": "^4.0.0",
+    "react-icons": "^4.4.0",
+    "react-query": "^3.39.2"
   },
   "pnpm": {
     "peerDependencyRules": {

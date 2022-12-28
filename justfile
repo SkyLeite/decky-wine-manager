@@ -32,3 +32,6 @@ deploy:
 reload:
     @echo "Telling Decky to reload our script"
     @node scripts/reload.js
+
+test:
+    python -c 'import main; main.test()'

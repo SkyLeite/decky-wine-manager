@@ -2,79 +2,76 @@ import {
   ButtonItem,
   definePlugin,
   DialogButton,
-  Menu,
-  MenuItem,
   PanelSection,
   PanelSectionRow,
   Router,
   ServerAPI,
-  showContextMenu,
   staticClasses,
+  showContextMenu,
 } from "decky-frontend-lib";
-import { VFC } from "react";
+import { QueryClient, QueryClientProvider } from "react-query";
+import { useMemo, VFC } from "react";
 import { FaShip } from "react-icons/fa";
+import ReleaseList from "./ReleaseList";
+import { ServerContext } from "./context";
+import { useProtonInstalls, useProtonReleases, useServer } from "./hooks";
 
-import logo from "../assets/logo.png";
-
-// interface AddMethodArgs {
-//   left: number;
-//   right: number;
-// }
-
-const Content: VFC<{ serverAPI: ServerAPI }> = ({}) => {
-  // const [result, setResult] = useState<number | undefined>();
-
-  // const onClick = async () => {
-  //   const result = await serverAPI.callPluginMethod<AddMethodArgs, number>(
-  //     "add",
-  //     {
-  //       left: 2,
-  //       right: 2,
-  //     }
-  //   );
-  //   if (result.success) {
-  //     setResult(result.result);
-  //   }
-  // };
+const Manage: VFC = () => {
+  const releases = useProtonReleases();
 
   return (
-    <PanelSection title="Panel Section">
+    <PanelSection title="Manage">
       <PanelSectionRow>
         <ButtonItem
           layout="below"
-          onClick={(e) =>
+          onClick={(e) => {
             showContextMenu(
-              <Menu label="Menu" cancelText="CAAAANCEL" onCancel={() => {}}>
-                <MenuItem onSelected={() => {}}>Item #1</MenuItem>
-                <MenuItem onSelected={() => {}}>Item #2</MenuItem>
-                <MenuItem onSelected={() => {}}>Item #3</MenuItem>
-              </Menu>,
+              <ReleaseList releases={releases} />,
               e.currentTarget ?? window
-            )
-          }
-        >
-          Server says test!
-        </ButtonItem>
-      </PanelSectionRow>
-
-      <PanelSectionRow>
-        <div style={{ display: "flex", justifyContent: "center" }}>
-          <img src={logo} />
-        </div>
-      </PanelSectionRow>
-
-      <PanelSectionRow>
-        <ButtonItem
-          layout="below"
-          onClick={() => {
-            Router.CloseSideMenus();
-            Router.Navigate("/decky-plugin-test");
+            );
           }}
         >
-          Router
+          Add New
         </ButtonItem>
       </PanelSectionRow>
     </PanelSection>
+  );
+};
+
+const VersionList: VFC = () => {
+  const protonInstalls = useProtonInstalls();
+
+  if (protonInstalls.isError) {
+    return <span>{protonInstalls.error}</span>;
+  }
+
+  if (protonInstalls.isSuccess) {
+    return (
+      <PanelSection title="Proton Installs">
+        <PanelSectionRow>
+          {protonInstalls.data.map((proton) => (
+            <ButtonItem layout="below">{proton.name}</ButtonItem>
+          ))}
+        </PanelSectionRow>
+      </PanelSection>
+    );
+  }
+
+  return null;
+};
+
+const queryClient = new QueryClient();
+
+const Content: VFC<{ serverAPI: ServerAPI }> = ({ serverAPI }) => {
+  const api = useMemo(() => serverAPI, []);
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <ServerContext.Provider value={api}>
+        <Manage />
+        <VersionList />
+      </ServerContext.Provider>
+    </QueryClientProvider>
   );
 };
 
@@ -95,7 +92,7 @@ export default definePlugin((serverApi: ServerAPI) => {
   });
 
   return {
-    title: <div className={staticClasses.Title}>Example Plugin</div>,
+    title: <div className={staticClasses.Title}>Proton Manager</div>,
     content: <Content serverAPI={serverApi} />,
     icon: <FaShip />,
     onDismount() {

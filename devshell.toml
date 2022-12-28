@@ -19,6 +19,12 @@ value = "22"
 name = "DECKIP"
 value = "192.168.1.229"
 
+[devshell]
+packages = [
+    "nodePackages.typescript-language-server",
+    "nodePackages.typescript",
+    "python310Packages.python-lsp-server",
+]
 
 [[commands]]
 package = "devshell.cli"
@@ -28,6 +34,10 @@ help = "Per project developer environments"
 [[commands]]
 package = "nodejs-18_x"
 name = "node"
+
+[[commands]]
+package = "python310"
+name = "python"
 
 [[commands]]
 package = "nodePackages.prettier"
