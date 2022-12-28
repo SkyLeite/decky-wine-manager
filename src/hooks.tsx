@@ -10,7 +10,6 @@ const useServerCall = <T,>(method: string, args?: any) => {
   const server = useServer();
 
   return useQuery([method, args], async () => {
-    console.log(method, args);
     if (!server) {
       throw new Error("ServerAPI not found.");
     }
@@ -59,6 +58,11 @@ export const useServer = () => {
   return server;
 };
 
+export const useToast = () => {
+  const server = useServer();
+  return server.toaster.toast.bind(server.toaster);
+};
+
 export const useProtonInstalls = () => {
   type ProtonInstall = {
     version: string;
@@ -84,8 +88,20 @@ export const useProtonReleases = () => {
 
 export const useInstallProtonRelease = () => {
   const queryClient = useQueryClient();
+  const toast = useToast();
+
   const mutation = useServerMutation({
-    onSuccess: () => queryClient.invalidateQueries("get_proton_installs"),
+    onSuccess: (data, { args: { id } }) => {
+      const { name } = data.find(
+        (install) => String(install.version) == String(id)
+      );
+
+      queryClient.invalidateQueries("get_proton_installs");
+      toast({
+        title: "Success",
+        body: `${name} is being installed!`,
+      });
+    },
   });
 
   return (id: string) =>
