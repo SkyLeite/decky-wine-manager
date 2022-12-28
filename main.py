@@ -55,6 +55,10 @@ class Plugin:
     async def get_available_releases(self):
         return await protonge.get_releases()
 
+    async def install_release(self, id):
+        logger.info(f"Reached! I should now be installing {id}")
+        return None
+
     # Asyncio-compatible long-running code, executed in a task when the plugin is loaded
     async def _main(self):
         logger.info("Hello World!")

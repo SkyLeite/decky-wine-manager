@@ -7,30 +7,19 @@ import {
   Router,
   ServerAPI,
   staticClasses,
-  showContextMenu,
 } from "decky-frontend-lib";
-import { QueryClient, QueryClientProvider } from "react-query";
-import { useMemo, VFC } from "react";
+import { VFC } from "react";
 import { FaShip } from "react-icons/fa";
-import ReleaseList from "./ReleaseList";
-import { ServerContext } from "./context";
-import { useProtonInstalls, useProtonReleases, useServer } from "./hooks";
+import AppContext from "./context";
+import { useProtonInstalls, useShowReleaseList } from "./hooks";
 
 const Manage: VFC = () => {
-  const releases = useProtonReleases();
+  const showReleaseList = useShowReleaseList();
 
   return (
     <PanelSection title="Manage">
       <PanelSectionRow>
-        <ButtonItem
-          layout="below"
-          onClick={(e) => {
-            showContextMenu(
-              <ReleaseList releases={releases} />,
-              e.currentTarget ?? window
-            );
-          }}
-        >
+        <ButtonItem layout="below" onClick={() => showReleaseList()}>
           Add New
         </ButtonItem>
       </PanelSectionRow>
@@ -47,7 +36,7 @@ const VersionList: VFC = () => {
 
   if (protonInstalls.isSuccess) {
     return (
-      <PanelSection title="Proton Installs">
+      <PanelSection title="Installed">
         <PanelSectionRow>
           {protonInstalls.data.map((proton) => (
             <ButtonItem layout="below">{proton.name}</ButtonItem>
@@ -60,18 +49,12 @@ const VersionList: VFC = () => {
   return null;
 };
 
-const queryClient = new QueryClient();
-
 const Content: VFC<{ serverAPI: ServerAPI }> = ({ serverAPI }) => {
-  const api = useMemo(() => serverAPI, []);
-
   return (
-    <QueryClientProvider client={queryClient}>
-      <ServerContext.Provider value={api}>
-        <Manage />
-        <VersionList />
-      </ServerContext.Provider>
-    </QueryClientProvider>
+    <AppContext server={serverAPI}>
+      <Manage />
+      <VersionList />
+    </AppContext>
   );
 };
 

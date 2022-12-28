@@ -1,12 +1,11 @@
 import { VFC } from "react";
-import { Menu, MenuItem, ServerAPI } from "decky-frontend-lib";
-import { useProtonReleases } from "./hooks";
+import { Menu, MenuItem } from "decky-frontend-lib";
+import { useProtonReleases, useShowInstallRelease } from "./hooks";
 
-type Props = {
-  releases: ReturnType<typeof useProtonReleases>;
-};
+const ReleaseList: VFC = () => {
+  const installRelease = useShowInstallRelease();
+  const releases = useProtonReleases();
 
-const ReleaseList: VFC<Props> = ({ releases }) => {
   if (releases.isLoading) {
     return <span>Loading...</span>;
   }
@@ -19,7 +18,9 @@ const ReleaseList: VFC<Props> = ({ releases }) => {
         onCancel={() => {}}
       >
         {releases.data.map((release) => (
-          <MenuItem onSelected={() => {}}>{release.tag_name}</MenuItem>
+          <MenuItem onSelected={() => installRelease(release.id)}>
+            {release.tag_name}
+          </MenuItem>
         ))}
       </Menu>
     );
