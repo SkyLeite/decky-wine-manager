@@ -42,6 +42,8 @@ name = "python"
 [[commands]]
 package = "nodePackages.prettier"
 
+[[commands]]
+package = "nodePackages.eslint"
 
 [[commands]]
 package = "just"
