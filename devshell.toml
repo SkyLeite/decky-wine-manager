@@ -46,5 +46,8 @@ package = "nodePackages.prettier"
 package = "nodePackages.eslint"
 
 [[commands]]
+package = "black"
+
+[[commands]]
 package = "just"
 help = "Our command-runner. Similar to Makefile. Run `just --list` to see the available commands"
