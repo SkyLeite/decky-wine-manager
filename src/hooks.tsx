@@ -6,22 +6,30 @@ import AppContext from "./context";
 import ReleaseList from "./ReleaseList";
 import InstallRelease from "./InstallRelease";
 
-const useServerCall = <T,>(method: string, args?: any) => {
+const useServerCall = <T,>(
+  method: string,
+  args?: any,
+  options?: Parameters<typeof useQuery>[2]
+) => {
   const server = useServer();
 
-  return useQuery([method, args], async () => {
-    if (!server) {
-      throw new Error("ServerAPI not found.");
-    }
+  return useQuery(
+    [method, args],
+    async () => {
+      if (!server) {
+        throw new Error("ServerAPI not found.");
+      }
 
-    const result = await server.callPluginMethod<any, T>(method, args);
+      const result = await server.callPluginMethod<any, T>(method, args);
 
-    if (result.success) {
-      return result.result;
-    } else {
-      throw new Error(result.result);
-    }
-  });
+      if (result.success) {
+        return result.result;
+      } else {
+        throw new Error(result.result);
+      }
+    },
+    options
+  );
 };
 
 const useServerMutation = <T,>(options?: Parameters<typeof useMutation>[2]) => {
@@ -70,7 +78,11 @@ export const useProtonInstalls = () => {
     status: "installed" | "installing";
   };
 
-  const response = useServerCall<ProtonInstall[]>("get_proton_installs");
+  const response = useServerCall<ProtonInstall[]>(
+    "get_proton_installs",
+    undefined,
+    { refetchInterval: 5000 }
+  );
 
   return response;
 };

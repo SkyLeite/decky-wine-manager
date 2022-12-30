@@ -19,7 +19,7 @@ import logging
 import os
 import sys
 
-from lib import protonge
+from lib import protonge, manager
 import aiohttp
 import asyncio
 
@@ -68,9 +68,6 @@ class Plugin:
     async def get_releases(self):
         return await protonge.get_releases()
 
-    # async def get_available_releases(self):
-    #     return await protonge.get_releases()
-
     async def install_release(self, id):
         logger.info(f"Reached! I should now be installing {id}")
         releases = await self.get_releases(self)
@@ -81,8 +78,39 @@ class Plugin:
         )
         return await self.get_proton_installs(self)
 
+    async def _worker(self):
+        while True:
+            try:
+                pending_install = self.in_progress_installs[-1]
+            except IndexError:
+                logger.debug("No pending installs. Sleeping.")
+                await asyncio.sleep(5)
+                pass
+            else:
+                logger.info(
+                    f"Found pending install of {pending_install['name']}. Installing..."
+                )
+
+                # Sleep for the "sleep_for" seconds.
+                ge_release = await protonge.get_release_by_tag_name(pending_install['name'])
+                logger.debug(f"Found release {ge_release['tag_name']}")
+
+                asset = next(x for x in ge_release['assets'] if x['content_type'] == "application/gzip")
+                logger.debug(f"Found asset {asset['name']}")
+
+                release = {
+                    "name": pending_install['name'],
+                    "content_type": asset['content_type'],
+                    "download_url": asset['browser_download_url']
+                }
+                await manager.install_release(release)
+
+                logger.info(f"Installed {pending_install['name']} successfully")
+                self.in_progress_installs.pop()
+
     # Asyncio-compatible long-running code, executed in a task when the plugin is loaded
     async def _main(self):
+        await self._worker(self)
         logger.info("Hello World!")
 
     # Function called first during the unload process, utilize this to handle your plugin being removed

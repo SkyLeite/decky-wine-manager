@@ -1,5 +1,5 @@
 import { FC } from "react";
 
-const Spinner: FC = () => <span class="loader"></span>;
+const Spinner: FC = () => <span className="loader"></span>;
 
 export default Spinner;

@@ -11,3 +11,7 @@ async def get_releases():
 
             response = await response.json()
             return response
+
+async def get_release_by_tag_name(tag_name):
+    releases = await get_releases()
+    return next(x for x in releases if x['tag_name'] == tag_name)
