@@ -88,6 +88,7 @@ const VersionList: VFC = () => {
               <ButtonItem
                 layout="below"
                 onClick={() => showManageInstallMenu(proton.name)}
+                disabled={proton.status == "installing"}
               >
                 <div
                   style={{

@@ -1,9 +1,9 @@
 {
   "name": "Proton Manager",
   "author": "Sky Leite",
-  "flags": ["debug", "_root"],
+  "flags": [],
   "publish": {
-    "tags": ["template", "root"],
+    "tags": [],
     "description": "A plugin used to managed your custom Proton installs",
     "image": "https://opengraph.githubassets.com/1/SteamDeckHomebrew/PluginLoader"
   }
