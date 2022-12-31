@@ -78,6 +78,11 @@ class Plugin:
         )
         return await self.get_proton_installs(self)
 
+    async def remove_release(self, name):
+        await manager.remove_release(name)
+
+        return await self.get_proton_installs(self)
+
     async def _worker(self):
         while True:
             try:

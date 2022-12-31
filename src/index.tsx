@@ -11,10 +11,15 @@ import {
 import { VFC } from "react";
 import { FaCheck, FaShip, FaSpinner } from "react-icons/fa";
 import AppContext from "./context";
-import { useProtonInstalls, useShowReleaseList } from "./hooks";
+import {
+  useProtonInstalls,
+  useShowManageInstallMenu,
+  useShowReleaseList,
+} from "./hooks";
 import Spinner from "./Spinner";
 
 import styles from "../assets/styles.css";
+import { useShowContextMenu } from "./hooks";
 
 const Manage: VFC = () => {
   const showReleaseList = useShowReleaseList();
@@ -32,6 +37,7 @@ const Manage: VFC = () => {
 
 const VersionList: VFC = () => {
   const protonInstalls = useProtonInstalls();
+  const showManageInstallMenu = useShowManageInstallMenu();
 
   if (protonInstalls.isError) {
     return <span>{protonInstalls.error}</span>;
@@ -42,7 +48,10 @@ const VersionList: VFC = () => {
       <PanelSection title="Installs">
         {protonInstalls.data.map((proton) => (
           <PanelSectionRow>
-            <ButtonItem layout="below">
+            <ButtonItem
+              layout="below"
+              onClick={() => showManageInstallMenu(proton.name)}
+            >
               <div
                 style={{
                   display: "flex",

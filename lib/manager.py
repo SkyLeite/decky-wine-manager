@@ -4,6 +4,7 @@ import aiohttp
 import tarfile
 import io
 import os
+import shutil
 
 logger = logging.getLogger()
 proton_installs_path = "/home/deck/.steam/root/compatibilitytools.d"
@@ -33,3 +34,8 @@ async def install_release(release: Release):
                 b = io.BytesIO(await resp.read())
                 tar = tarfile.open(fileobj=b, mode='r:gz')
                 tar.extractall(path)
+
+
+async def remove_release(name: str):
+    path = proton_installs_path + "/" + name
+    shutil.rmtree(path)

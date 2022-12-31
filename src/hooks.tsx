@@ -5,6 +5,7 @@ import { showContextMenu } from "decky-frontend-lib";
 import AppContext from "./context";
 import ReleaseList from "./ReleaseList";
 import InstallRelease from "./InstallRelease";
+import ManageRelease from "./ManageRelease";
 
 const useServerCall = <T,>(
   method: string,
@@ -123,6 +124,27 @@ export const useInstallProtonRelease = () => {
     });
 };
 
+export const useRemoveProtonRelease = () => {
+  const queryClient = useQueryClient();
+  const toast = useToast();
+
+  const mutation = useServerMutation({
+    onSuccess: (data, { args: { name } }) => {
+      queryClient.invalidateQueries("get_proton_installs");
+      toast({
+        title: "Success",
+        body: `${name} has been removed.`,
+      });
+    },
+  });
+
+  return (name: string) =>
+    mutation.mutate({
+      method: "remove_release",
+      args: { name },
+    });
+};
+
 export const useProtonRelease = (id: string) => {
   const releases = useProtonReleases();
 
@@ -150,5 +172,12 @@ export const useShowInstallRelease = () => {
   const showMenu = useShowContextMenu();
   return (id: string) => {
     return showMenu(<InstallRelease id={id} />);
+  };
+};
+
+export const useShowManageInstallMenu = () => {
+  const showMenu = useShowContextMenu();
+  return (name: string) => {
+    return showMenu(<ManageRelease name={name} />);
   };
 };
