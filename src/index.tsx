@@ -136,10 +136,6 @@ const DeckyPluginRouterTest: VFC = () => {
 export default definePlugin((serverApi: ServerAPI) => {
   serverApi.injectCssIntoTab("QuickAccess_uid2", styles);
 
-  serverApi.routerHook.addRoute("/decky-plugin-test", DeckyPluginRouterTest, {
-    exact: true,
-  });
-
   return {
     title: <div className={staticClasses.Title}>Proton Manager</div>,
     content: <Content serverAPI={serverApi} />,
