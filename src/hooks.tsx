@@ -1,4 +1,4 @@
-import { ReactNode, useContext } from "react";
+import { ReactNode, useContext, useRef, useEffect } from "react";
 import { ServerContext } from "./context";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { showContextMenu } from "decky-frontend-lib";
@@ -180,4 +180,12 @@ export const useShowManageInstallMenu = () => {
   return (name: string) => {
     return showMenu(<ManageRelease name={name} />);
   };
+};
+
+export const usePrevious = (value) => {
+  const ref = useRef();
+  useEffect(() => {
+    ref.current = value; //assign the value of ref to the argument
+  }, [value]); //this code will run when the value of 'value' changes
+  return ref.current; //in the end, return the current ref value.
 };

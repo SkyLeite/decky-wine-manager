@@ -8,18 +8,22 @@ import {
   ServerAPI,
   staticClasses,
 } from "decky-frontend-lib";
-import { VFC } from "react";
+import { useMemo, VFC } from "react";
 import { FaCheck, FaShip, FaSpinner } from "react-icons/fa";
 import AppContext from "./context";
 import {
+  usePrevious,
   useProtonInstalls,
   useShowManageInstallMenu,
   useShowReleaseList,
+  useToast,
 } from "./hooks";
 import Spinner from "./Spinner";
 
 import styles from "../assets/styles.css";
 import { useShowContextMenu } from "./hooks";
+
+let pendingRestart = false;
 
 const Manage: VFC = () => {
   const showReleaseList = useShowReleaseList();
@@ -38,6 +42,33 @@ const Manage: VFC = () => {
 const VersionList: VFC = () => {
   const protonInstalls = useProtonInstalls();
   const showManageInstallMenu = useShowManageInstallMenu();
+  const previousProtonInstalls = usePrevious(protonInstalls);
+  const toast = useToast();
+
+  const isPendingRestart = useMemo(() => {
+    if (pendingRestart) return true;
+    if (!protonInstalls?.isSuccess) return false;
+    if (!previousProtonInstalls?.isSuccess) return false;
+
+    return protonInstalls.data.reduce((acc, current) => {
+      const foundPreviousInstall = previousProtonInstalls.data.find(
+        (install) => install.name == current.name
+      );
+
+      if (
+        foundPreviousInstall &&
+        foundPreviousInstall.status == "installing" &&
+        current.status == "installed"
+      ) {
+        toast({
+          title: "Success",
+          body: `${foundPreviousInstall.name} has been installed!`,
+        });
+        pendingRestart = true;
+        return true;
+      }
+    }, false);
+  }, [protonInstalls]);
 
   if (protonInstalls.isError) {
     return <span>{protonInstalls.error}</span>;
@@ -45,30 +76,37 @@ const VersionList: VFC = () => {
 
   if (protonInstalls.isSuccess) {
     return (
-      <PanelSection title="Installs">
-        {protonInstalls.data.map((proton) => (
-          <PanelSectionRow>
-            <ButtonItem
-              layout="below"
-              onClick={() => showManageInstallMenu(proton.name)}
-            >
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                }}
+      <div>
+        {isPendingRestart && (
+          <p style={{ paddingLeft: "20px", paddingBottom: "10px" }}>
+            Please restart Steam to apply your changes
+          </p>
+        )}
+        <PanelSection title="Installs">
+          {protonInstalls.data.map((proton) => (
+            <PanelSectionRow>
+              <ButtonItem
+                layout="below"
+                onClick={() => showManageInstallMenu(proton.name)}
               >
-                <span>{proton.name}</span>
-                {proton.status == "installed" && (
-                  <FaCheck style={{ display: "block" }} />
-                )}
-                {proton.status == "installing" && <Spinner />}
-              </div>
-            </ButtonItem>
-          </PanelSectionRow>
-        ))}
-      </PanelSection>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                  }}
+                >
+                  <span>{proton.name}</span>
+                  {proton.status == "installed" && (
+                    <FaCheck style={{ display: "block" }} />
+                  )}
+                  {proton.status == "installing" && <Spinner />}
+                </div>
+              </ButtonItem>
+            </PanelSectionRow>
+          ))}
+        </PanelSection>
+      </div>
     );
   }
 
