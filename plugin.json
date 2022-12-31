@@ -1,10 +1,10 @@
 {
-  "name": "Proton Manager",
+  "name": "Wine Manager",
   "author": "Sky Leite",
   "flags": [],
   "publish": {
     "tags": [],
-    "description": "A plugin used to managed your custom Proton installs",
+    "description": "A plugin used to managed your custom Wine / Proton installs",
     "image": "https://opengraph.githubassets.com/1/SteamDeckHomebrew/PluginLoader"
   }
 }

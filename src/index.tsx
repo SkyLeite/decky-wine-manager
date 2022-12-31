@@ -138,7 +138,7 @@ export default definePlugin((serverApi: ServerAPI) => {
   serverApi.injectCssIntoTab("QuickAccess_uid2", styles);
 
   return {
-    title: <div className={staticClasses.Title}>Proton Manager</div>,
+    title: <div className={staticClasses.Title}>Wine Manager</div>,
     content: <Content serverAPI={serverApi} />,
     icon: <FaShip />,
     onDismount() {
