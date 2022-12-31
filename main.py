@@ -20,10 +20,11 @@ import os
 import sys
 
 from lib import protonge, manager
+from helpers import get_user
 import aiohttp
 import asyncio
 
-proton_installs_path = "/home/deck/.steam/root/compatibilitytools.d"
+proton_installs_path = f"/home/{get_user()}/.steam/root/compatibilitytools.d"
 
 logging.basicConfig(
     filename="/tmp/proton-manager.log",
@@ -97,16 +98,22 @@ class Plugin:
                 )
 
                 # Sleep for the "sleep_for" seconds.
-                ge_release = await protonge.get_release_by_tag_name(pending_install['name'])
+                ge_release = await protonge.get_release_by_tag_name(
+                    pending_install["name"]
+                )
                 logger.debug(f"Found release {ge_release['tag_name']}")
 
-                asset = next(x for x in ge_release['assets'] if x['content_type'] == "application/gzip")
+                asset = next(
+                    x
+                    for x in ge_release["assets"]
+                    if x["content_type"] == "application/gzip"
+                )
                 logger.debug(f"Found asset {asset['name']}")
 
                 release = {
-                    "name": pending_install['name'],
-                    "content_type": asset['content_type'],
-                    "download_url": asset['browser_download_url']
+                    "name": pending_install["name"],
+                    "content_type": asset["content_type"],
+                    "download_url": asset["browser_download_url"],
                 }
                 await manager.install_release(release)
 
