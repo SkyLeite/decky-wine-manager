@@ -5,6 +5,7 @@ import tarfile
 import io
 import os
 import shutil
+from helpers import get_ssl_context
 
 logger = logging.getLogger()
 proton_installs_path = "/home/deck/.steam/root/compatibilitytools.d"
@@ -22,7 +23,7 @@ def _is_already_installed(name: str):
 
 async def install_release(release: Release):
     async with aiohttp.ClientSession() as session:
-        async with session.get(release["download_url"], ssl=False) as resp:
+        async with session.get(release["download_url"], ssl=get_ssl_context()) as resp:
             if (
                 resp.status == 200
                 and not _is_already_installed(release["name"])
@@ -32,7 +33,7 @@ async def install_release(release: Release):
 
                 logger.debug(f"Extracting release to {path}")
                 b = io.BytesIO(await resp.read())
-                tar = tarfile.open(fileobj=b, mode='r:gz')
+                tar = tarfile.open(fileobj=b, mode="r:gz")
                 tar.extractall(path)
 
 
