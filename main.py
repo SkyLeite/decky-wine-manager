@@ -8,7 +8,7 @@ def add_plugin_to_path():
     import sys
 
     plugin_dir = get_plugin_dir()
-    directories = [["./"], ["vendor"]]
+    directories = [["./"], ["lib"], ["vendor"]]
     for dir in directories:
         sys.path.append(str(plugin_dir.joinpath(*dir)))
 
