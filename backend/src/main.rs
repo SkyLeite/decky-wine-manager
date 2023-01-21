@@ -1,15 +1,16 @@
-use std::collections::HashMap;
-use std::path::Path;
-
 use compat_tool::CompatTool;
 use rocket::response::Debug;
 use rocket::serde::json::Json;
-use rocket::Response;
+use rocket::State;
+use std::collections::HashMap;
+use std::sync::Arc;
 use tools::ProtonGE;
 
 use crate::compat_tool::Release;
+use crate::queue::TaskQueue;
 
 pub mod compat_tool;
+pub mod queue;
 pub mod tools;
 
 #[macro_use]
@@ -28,19 +29,34 @@ async fn releases() -> Result<Json<HashMap<String, Vec<Release>>>, Debug<anyhow:
 }
 
 #[get("/install/<tool>/<id>")]
-async fn install(tool: &str, id: &str) -> Result<(), Debug<anyhow::Error>> {
-    let destination = Path::new("./out");
-
+async fn install(
+    tool: &str,
+    id: &str,
+    queue: &State<Arc<TaskQueue>>,
+) -> Result<(), Debug<anyhow::Error>> {
     match tool {
-        "protonge" => Ok(ProtonGE::install_release(id, destination).await?),
+        "protonge" => {
+            let release = ProtonGE::get_releases()
+                .await?
+                .into_iter()
+                .find(|release| release.id == id);
+
+            queue.push(release.unwrap());
+
+            Ok(())
+        }
         _ => Err(Debug(anyhow!("Tool not found"))),
     }
 }
 
 #[rocket::main]
 async fn main() -> Result<(), rocket::Error> {
+    let queue = queue::new();
+    queue::start_worker(&queue);
+
     let _rocket = rocket::build()
         .mount("/", routes![releases, install])
+        .manage(queue)
         .launch()
         .await?;
 
