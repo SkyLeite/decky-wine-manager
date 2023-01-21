@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 use anyhow::Result;
 use octocrab;
 
@@ -36,8 +38,21 @@ impl TryFrom<octocrab::models::repos::Release> for Release {
                     id: release.id.to_string(),
                     name: release.tag_name,
                     download_url: url,
+                    tool: "protonge".to_string(),
                 })
             })
+    }
+}
+
+impl FromStr for ProtonGE {
+    type Err = ();
+
+    fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
+        if s == "protonge" {
+            Ok(Self {})
+        } else {
+            Err(())
+        }
     }
 }
 
@@ -56,7 +71,7 @@ async fn should_install_release() {
     let releases = ProtonGE::get_releases().await.unwrap();
     let release = &releases[0];
 
-    ProtonGE::install_release(release.id.clone(), std::path::Path::new("./out"))
+    ProtonGE::install_release(&release.id, std::path::Path::new("./out"))
         .await
         .unwrap();
 }

@@ -37,4 +37,5 @@ pub struct Release {
     pub id: String,
     pub name: String,
     pub download_url: Url,
+    pub tool: String,
 }
