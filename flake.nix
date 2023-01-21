@@ -1,20 +1,40 @@
 {
-  description = "virtual environments";
+  description = "A devShell example";
 
-  inputs.devshell.url = "github:numtide/devshell";
-  inputs.flake-utils.url = "github:numtide/flake-utils";
+  inputs = {
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    rust-overlay.url = "github:oxalica/rust-overlay";
+    flake-utils.url = "github:numtide/flake-utils";
+  };
 
-  outputs = { self, flake-utils, devshell, nixpkgs }:
-    flake-utils.lib.eachDefaultSystem (system: {
-      devShell =
-        let pkgs = import nixpkgs {
-          inherit system;
+  outputs = { self, nixpkgs, rust-overlay, flake-utils, ... }:
+    flake-utils.lib.eachDefaultSystem (system:
+      let
+        overlays = [ (import rust-overlay) ];
+        pkgs = import nixpkgs { inherit system overlays; };
+      in with pkgs; {
+        devShells.default = mkShell {
+          buildInputs = [
+            nodejs-18_x
+            nodePackages.typescript-language-server
+            nodePackages.typescript
+            nodePackages.prettier
+            nodePackages.eslint
+            just
+            rust-analyzer
+            cargo
+            cargo-edit
+            gcc
+            openssl
+            pkg-config
+            (rust-bin.selectLatestNightlyWith (toolchain:
+              toolchain.default.override { extensions = [ "rust-src" ]; }))
+          ];
 
-          overlays = [ devshell.overlay ];
+          shellHook = ''
+            alias ls=exa
+            alias find=fd
+          '';
         };
-        in
-        pkgs.devshell.mkShell {
-          imports = [ (pkgs.devshell.importTOML ./devshell.toml) ];
-        };
-    });
+      });
 }
