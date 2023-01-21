@@ -60,10 +60,16 @@ class Plugin:
 
     async def get_proton_installs(self):
         entries = os.listdir(proton_installs_path)
-        existing_installs = [
-            self._get_version_from_name(entry, "installed") for entry in entries
-        ]
+        existing_installs = []
 
+        for entry in entries:
+            try:
+                install = self._get_version_from_name(entry, "installed")
+                existing_installs.append(install)
+            except:
+                pass
+
+        # Fix everything lol
         return existing_installs + self.in_progress_installs
 
     async def get_releases(self):
