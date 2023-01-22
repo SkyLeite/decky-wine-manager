@@ -18,3 +18,4 @@ async-compression = { version = "0.3.15", features = ["futures-io", "gzip"] }
 async-tar = "0.4.2"
 rocket_anyhow = "0.1.1"
 deadqueue = "0.2.4"
+simple-websockets = "0.1.4"

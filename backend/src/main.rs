@@ -4,6 +4,7 @@ use rocket::serde::json::Json;
 use rocket::State;
 use std::collections::HashMap;
 use std::sync::Arc;
+use tokio::sync::RwLock;
 use tools::ProtonGE;
 
 use crate::compat_tool::Release;
@@ -12,6 +13,7 @@ use crate::queue::TaskQueue;
 pub mod compat_tool;
 pub mod queue;
 pub mod tools;
+pub mod ws;
 
 #[macro_use]
 extern crate anyhow;
@@ -51,8 +53,16 @@ async fn install(
 
 #[rocket::main]
 async fn main() -> Result<(), rocket::Error> {
+    let ws_server = Arc::new(RwLock::new(ws::WS::new(6969)));
+    let write_server = ws_server.clone();
+
+    tokio::spawn(async move {
+        let mut server = write_server.write().await;
+        server.poll().await;
+    });
+
     let queue = queue::new();
-    queue::start_worker(&queue);
+    queue::start_worker(&queue, &ws_server);
 
     let _rocket = rocket::build()
         .mount("/", routes![releases, install])

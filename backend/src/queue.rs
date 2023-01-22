@@ -1,8 +1,11 @@
 use std::{path::Path, sync::Arc};
 
+use tokio::sync::RwLock;
+
 use crate::{
     compat_tool::{CompatTool, Release},
     tools::ProtonGE,
+    ws::WS,
 };
 
 pub type TaskQueue = deadqueue::unlimited::Queue<Release>;
@@ -11,8 +14,9 @@ pub fn new() -> Arc<TaskQueue> {
     Arc::new(TaskQueue::new())
 }
 
-pub fn start_worker(queue: &Arc<TaskQueue>) {
+pub fn start_worker(queue: &Arc<TaskQueue>, ws_server: &Arc<RwLock<WS>>) {
     let queue = queue.clone();
+    let s = ws_server.clone();
 
     tokio::spawn(async move {
         loop {
@@ -20,9 +24,17 @@ pub fn start_worker(queue: &Arc<TaskQueue>) {
             println!("Found install {} {}", release.id, release.name);
 
             match release.tool.as_str() {
-                "protonge" => ProtonGE::install_release(&release.id, Path::new("./out"))
-                    .await
-                    .unwrap(),
+                "protonge" => {
+                    s.read()
+                        .await
+                        .broadcast(format!("installing:{}", &release.id).as_str());
+                    ProtonGE::install_release(&release.id, Path::new("./out"))
+                        .await
+                        .unwrap();
+                    s.read()
+                        .await
+                        .broadcast(format!("installed:{}", &release.id).as_str());
+                }
                 _ => println!("Not found"),
             }
 
