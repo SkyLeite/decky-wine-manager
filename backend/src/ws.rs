@@ -1,5 +1,6 @@
 use simple_websockets::{Event, EventHub, Message, Responder};
-use std::collections::HashMap;
+use std::{collections::HashMap, sync::Arc};
+use tokio::sync::RwLock;
 
 pub struct WS {
     event_hub: EventHub,
@@ -22,18 +23,18 @@ impl WS {
         });
     }
 
-    pub async fn poll(&mut self) {
+    pub async fn poll(ws: &Arc<RwLock<WS>>) {
         loop {
-            match self.event_hub.poll_event() {
+            match ws.read().await.event_hub.poll_async().await {
                 Event::Connect(client_id, responder) => {
                     println!("A client connected with id #{}", client_id);
                     // add their Responder to our `clients` map:
-                    self.clients.insert(client_id, responder);
+                    ws.write().await.clients.insert(client_id, responder);
                 }
                 Event::Disconnect(client_id) => {
                     println!("Client #{} disconnected.", client_id);
                     // remove the disconnected client from the clients map:
-                    self.clients.remove(&client_id);
+                    ws.write().await.clients.remove(&client_id);
                 }
                 Event::Message(client_id, message) => {
                     println!(
@@ -41,7 +42,14 @@ impl WS {
                         client_id, message
                     );
                     // retrieve this client's `Responder`:
-                    let responder = self.clients.get(&client_id).unwrap();
+                    let responder = ws
+                        .clone()
+                        .read()
+                        .await
+                        .clients
+                        .get(&client_id)
+                        .unwrap()
+                        .clone();
                     // echo the message back:
                     responder.send(message);
                 }

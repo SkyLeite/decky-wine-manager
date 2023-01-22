@@ -6,6 +6,7 @@ use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::sync::RwLock;
 use tools::ProtonGE;
+use ws::WS;
 
 use crate::compat_tool::Release;
 use crate::queue::TaskQueue;
@@ -54,15 +55,13 @@ async fn install(
 #[rocket::main]
 async fn main() -> Result<(), rocket::Error> {
     let ws_server = Arc::new(RwLock::new(ws::WS::new(6969)));
-    let write_server = ws_server.clone();
-
-    tokio::spawn(async move {
-        let mut server = write_server.write().await;
-        server.poll().await;
-    });
 
     let queue = queue::new();
-    queue::start_worker(&queue, &ws_server);
+    queue::start_worker(&queue, &ws_server.clone());
+
+    tokio::spawn(async move {
+        WS::poll(&ws_server.clone()).await;
+    });
 
     let _rocket = rocket::build()
         .mount("/", routes![releases, install])
