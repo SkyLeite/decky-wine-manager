@@ -25,7 +25,11 @@ impl WS {
 
     pub async fn poll(ws: &Arc<RwLock<WS>>) {
         loop {
-            match ws.read().await.event_hub.poll_async().await {
+            let reader = ws.read().await;
+            let event = reader.event_hub.poll_async().await;
+            drop(reader);
+
+            match event {
                 Event::Connect(client_id, responder) => {
                     println!("A client connected with id #{}", client_id);
                     // add their Responder to our `clients` map:

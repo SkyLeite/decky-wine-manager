@@ -25,15 +25,15 @@ pub fn start_worker(queue: &Arc<TaskQueue>, ws_server: &Arc<RwLock<WS>>) {
 
             match release.tool.as_str() {
                 "protonge" => {
-                    s.read()
-                        .await
-                        .broadcast(format!("installing:{}", &release.id).as_str());
+                    s.read().await.broadcast(
+                        format!("installing:{}:{}", &release.tool, &release.id).as_str(),
+                    );
                     ProtonGE::install_release(&release.id, Path::new("./out"))
                         .await
                         .unwrap();
                     s.read()
                         .await
-                        .broadcast(format!("installed:{}", &release.id).as_str());
+                        .broadcast(format!("installed:{}:{}", &release.tool, &release.id).as_str());
                 }
                 _ => println!("Not found"),
             }
