@@ -39,3 +39,18 @@ pub struct Release {
     pub download_url: Url,
     pub tool: String,
 }
+
+#[derive(Serialize)]
+pub struct Install {
+    pub name: String,
+    pub tool: String,
+}
+
+impl From<crate::vdf::CompatTool> for Install {
+    fn from(value: crate::vdf::CompatTool) -> Self {
+        Self {
+            name: value.display_name,
+            tool: "protonge".to_string(),
+        }
+    }
+}

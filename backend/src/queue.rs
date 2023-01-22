@@ -1,4 +1,7 @@
-use std::{path::Path, sync::Arc};
+use std::{
+    path::{Path, PathBuf},
+    sync::Arc,
+};
 
 use tokio::sync::RwLock;
 
@@ -14,7 +17,11 @@ pub fn new() -> Arc<TaskQueue> {
     Arc::new(TaskQueue::new())
 }
 
-pub fn start_worker(queue: &Arc<TaskQueue>, ws_server: &Arc<RwLock<WS>>) {
+pub fn start_worker(
+    queue: &Arc<TaskQueue>,
+    ws_server: &Arc<RwLock<WS>>,
+    compat_tool_path: PathBuf,
+) {
     let queue = queue.clone();
     let s = ws_server.clone();
 
@@ -28,7 +35,7 @@ pub fn start_worker(queue: &Arc<TaskQueue>, ws_server: &Arc<RwLock<WS>>) {
                     s.read().await.broadcast(
                         format!("installing:{}:{}", &release.tool, &release.id).as_str(),
                     );
-                    ProtonGE::install_release(&release.id, Path::new("./out"))
+                    ProtonGE::install_release(&release.id, &compat_tool_path)
                         .await
                         .unwrap();
                     s.read()
